@@ -9,11 +9,21 @@ const temp = fs.mkdtempSync(path.join(os.tmpdir(), "agensis-agent-pack-"));
 const prefix = path.join(temp, "install");
 
 try {
-  const packed = JSON.parse(execFileSync("npm", ["pack", "--ignore-scripts", "--json", "--pack-destination", temp], {
+  const packOutput = execFileSync("npm", ["pack", "--ignore-scripts", "--json", "--pack-destination", temp], {
     cwd: packageDir,
     encoding: "utf8",
-  }));
-  const tarball = path.join(temp, packed[0].filename);
+  });
+  const packed = JSON.parse(packOutput);
+  // npm 11 can occasionally return an empty JSON array from a successful pack
+  // when invoked inside another npm lifecycle. The tarball is still written;
+  // discover it from the isolated destination instead of dereferencing [0].
+  const candidates = packed[0]?.filename
+    ? [packed[0].filename]
+    : fs.readdirSync(temp).filter((name) => name.endsWith(".tgz"));
+  if (candidates.length !== 1) {
+    throw new Error(`Expected one packed tarball, found ${candidates.length}`);
+  }
+  const tarball = path.join(temp, candidates[0]);
   execFileSync("npm", ["install", "--ignore-scripts", "--prefix", prefix, tarball], { stdio: "pipe" });
   const binDir = path.join(prefix, "node_modules", ".bin");
   const expected = JSON.parse(fs.readFileSync(path.join(packageDir, "package.json"), "utf8")).version;
