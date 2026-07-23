@@ -565,6 +565,9 @@ function normalizeConfig(raw) {
     sharedModelsFile: String(raw.sharedModelsFile || process.env.AGENSIS_SHARED_MODELS_FILE || "").trim(),
     noCoding: codingDisabled,
     leanCli,
+    // Local Claude memory can contain private project notes. Never upload it
+    // unless the host operator opted in at daemon launch time.
+    syncMemory: booleanOption(raw.syncMemory, process.env.AGENSIS_SYNC_MEMORY === "1"),
     hostFolders: normalizeHostFolders(raw.hostFolders ?? raw.host_folders ?? process.env.AGENSIS_HOST_FOLDERS),
   };
   if (config.sharedModelsFile && !path.isAbsolute(config.sharedModelsFile)) {
@@ -1399,7 +1402,9 @@ async function computeCapabilities(config, reach = null) {
   const commands = detectCommandEntries({ cwd: config.cwd });
   const clis = detectClis();
   const mcpServers = detectMcpServers();
-  const memoryRoot = deriveMemoryRoot({ cwd: config.cwd, memoryDir: config.memoryDir }) || null;
+  const memoryRoot = config.syncMemory
+    ? deriveMemoryRoot({ cwd: config.cwd, memoryDir: config.memoryDir }) || null
+    : null;
   // Arrays are already sorted/stable at detection, so this canonical form is stable.
   // `commands` is included so the drift-check re-pushes when the user's slash
   // commands change. `reach` (agent-mesh F2/F6) is folded in too, so a listener
@@ -1461,6 +1466,7 @@ function lanAddrs(port) {
 // fatal. The root is the explicit memory_dir or the derived Claude palace for cwd.
 async function pushMemorySnapshot(ws, config) {
   try {
+    if (!config.syncMemory) return;
     const root = deriveMemoryRoot({ cwd: config.cwd, memoryDir: config.memoryDir });
     if (!root) return;
     const files = await snapshotMemory(root);

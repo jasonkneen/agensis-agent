@@ -8,9 +8,9 @@ name: Publish agent to npm
 #     git tag agent-v0.1.26
 #     git push origin agent-v0.1.26
 #
-# Requires a repo secret NPM_TOKEN (an npm automation token with publish rights
-# to the @agensis scope). Can also be run manually from the Actions tab, which
-# does a dry-run pack only (no publish) so you can smoke-test the pipeline.
+# npm Trusted Publishing is bound to this repository and workflow filename.
+# GitHub OIDC authenticates the tag build without a long-lived npm token.
+# A manual run verifies and packs only; it never publishes.
 on:
   push:
     tags:

@@ -11,8 +11,10 @@
     "test": "node --experimental-test-module-mocks --test tests/*.test.cjs tests/*.test.mjs",
     "test:unit": "vitest run tests/unit",
     "build": "npm run build --workspace=@agensis/agensis-agent",
+    "version:check": "node scripts/check-version.mjs",
+    "artifact:smoke": "node scripts/smoke-packed-artifact.mjs",
     "pack:dry-run": "npm run pack:dry-run --workspace=@agensis/agensis-agent",
-    "verify": "npm run check && npm test && npm run test:unit && npm run build && npm run pack:dry-run"
+    "verify": "npm run version:check && npm run check && npm test && npm run test:unit && npm run build && npm run artifact:smoke"
   },
   "devDependencies": {
     "vitest": "^4.1.9"

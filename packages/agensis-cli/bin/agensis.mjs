@@ -61,6 +61,10 @@ function parseArgs(argv) {
       args.fullCliContext = true;
       continue;
     }
+    if (key === "syncMemory") {
+      args.syncMemory = true;
+      continue;
+    }
     if (key === "cursorbuddyBridge") {
       args.cursorBuddyBridge = true;
       continue;
@@ -120,6 +124,8 @@ Options:
   --no-coding             Disable coding jobs; keep presence/shared inference only
   --full-cli-context      Load all user CLI skills, plugins, hooks, memory, and MCPs
                           (default isolates Claude/Codex to project + Agensis context)
+  --sync-memory           Opt in to mirroring this project's Claude memory files
+                          to the connected Agensis workspace (default: off)
   --model <id>            Default model to pass to supported coding CLIs
   --permission-mode <m>   default, accept_edits, or yolo
   --yolo                  Alias for --permission-mode yolo

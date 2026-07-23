@@ -35,11 +35,11 @@ test('CursorBuddy buddy connect caches a successful daemon claim locally', async
     const daemonArgs = await claimCursorBuddyConnectionKey({
       key: connectionKey,
       url: 'http://localhost:61447/',
-      cwd: '/Users/jkneen/Documents/GitHub/3Dpet',
+      cwd: '/Users/example/projects/sample-app',
       permissionMode: 'accept_edits',
     }, {
       homedir: home,
-      hostname: 'OzBook-M3-4.local',
+      hostname: 'dev-machine.local',
       cwd: '/fallback/cwd',
       version: 'test-version',
       fetchImpl: async (url, options) => {
@@ -65,7 +65,7 @@ test('CursorBuddy buddy connect caches a successful daemon claim locally', async
 
     assert.equal(calls.length, 1);
     assert.equal(calls[0].url, 'http://localhost:61447/backend/cursorbuddy/connection-keys/claim');
-    assert.equal(calls[0].body.host, 'OzBook-M3-4.local');
+    assert.equal(calls[0].body.host, 'dev-machine.local');
     assert.equal(calls[0].body.runtimeKind, 'agensis-cli');
     assert.equal(daemonArgs.command, 'connect');
     assert.equal(daemonArgs.url, 'http://localhost:61447');
@@ -74,7 +74,7 @@ test('CursorBuddy buddy connect caches a successful daemon claim locally', async
     assert.equal(daemonArgs.agent, 'agent-1');
     assert.equal(daemonArgs.handle, 'cursorbuddy-website-avatar');
     assert.equal(daemonArgs.name, 'mac');
-    assert.equal(daemonArgs.cwd, '/Users/jkneen/Documents/GitHub/3Dpet');
+    assert.equal(daemonArgs.cwd, '/Users/example/projects/sample-app');
     assert.equal(daemonArgs.cursorBuddyRuntime, true);
     assert.equal(daemonArgs.key, undefined);
 
@@ -111,11 +111,11 @@ test('CursorBuddy buddy connect restarts from cache when a key was already claim
     const daemonArgs = await claimCursorBuddyConnectionKey({
       key: connectionKey,
       url: 'http://localhost:61447',
-      cwd: '/Users/jkneen/Documents/GitHub/3Dpet',
+      cwd: '/Users/example/projects/sample-app',
       model: 'claude-fable-5',
       permissionMode: 'yolo',
       share: true,
-      sharedModelsFile: '/Users/jkneen/models.json',
+      sharedModelsFile: '/Users/example/models.json',
       noCoding: true,
     }, {
       homedir: home,
@@ -129,11 +129,11 @@ test('CursorBuddy buddy connect restarts from cache when a key was already claim
     assert.equal(daemonArgs.token, 'aga_cached_token');
     assert.equal(daemonArgs.workspace, 'ws-1');
     assert.equal(daemonArgs.agent, 'agent-1');
-    assert.equal(daemonArgs.cwd, '/Users/jkneen/Documents/GitHub/3Dpet');
+    assert.equal(daemonArgs.cwd, '/Users/example/projects/sample-app');
     assert.equal(daemonArgs.model, 'claude-fable-5');
     assert.equal(daemonArgs.permissionMode, 'yolo');
     assert.equal(daemonArgs.share, true);
-    assert.equal(daemonArgs.sharedModelsFile, '/Users/jkneen/models.json');
+    assert.equal(daemonArgs.sharedModelsFile, '/Users/example/models.json');
     assert.equal(daemonArgs.noCoding, true);
     assert.equal(daemonArgs.cursorBuddyRuntime, true);
   } finally {

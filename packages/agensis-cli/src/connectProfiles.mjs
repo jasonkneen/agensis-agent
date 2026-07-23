@@ -25,6 +25,7 @@ const PROFILE_KEYS = [
   "noCoding",
   "leanCli",
   "fullCliContext",
+  "syncMemory",
   "lanListener",
   "primaryDaemon",
   "cursorBuddyBridge",

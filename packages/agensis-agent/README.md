@@ -61,6 +61,7 @@ Optional:
 - `--cwd <path>` — folder where the coding CLI runs
 - `--coding-cmd <command>` — command used for jobs (default `claude -p`)
 - `--full-cli-context` — opt out of the default isolated Claude/Codex launch
+- `--sync-memory` — opt in to mirroring Claude memory files to Agensis
 - `--max-concurrency <n>` — simultaneous coding CLI jobs (default `2`)
 - `--model <id>` — default model passed to supported coding CLIs
 - `--permission-mode <mode>` — `default`, `accept_edits`, or `yolo`
@@ -75,14 +76,21 @@ Environment fallbacks: `AGENSIS_URL`, `AGENSIS_TOKEN`,
 `AGENSIS_WORKSPACE` / `AGENSIS_WORKSPACE_ID`, `AGENSIS_AGENT` / `AGENSIS_AGENT_ID`,
 `AGENSIS_HANDLE`, `AGENSIS_NAME`, `AGENSIS_CWD`, `AGENSIS_CODING_CMD` / `CODING_CMD`,
 `AGENSIS_MODEL` / `CLAUDE_MODEL`, `AGENSIS_PERMISSION_MODE`, `AGENSIS_TIMEOUT_MS`,
-`AGENSIS_HEARTBEAT_MS`, `AGENSIS_ONCE=1`.
+`AGENSIS_HEARTBEAT_MS`, `AGENSIS_SYNC_MEMORY=1`, `AGENSIS_ONCE=1`.
 
 ## Security
 
 The daemon runs on your machine and executes the configured coding command in
-the working directory you start it in. Your local credentials and filesystem
-stay local; agensis sends the job payload and receives the result. Treat it like
-any local coding agent with access to that folder.
+the working directory you start it in. Agensis sends the job payload and
+receives streamed CLI output and the final result. Local credentials are not
+intentionally uploaded, but the coding CLI can read files allowed by its own
+permission mode, so treat it like any local coding agent with access to that
+folder.
+
+Claude memory synchronization is off by default. `--sync-memory` opts in to
+uploading the selected project's memory file names, contents, sizes, and
+absolute memory-root path to the connected Agensis workspace. Reads are
+restricted to that root and each file is capped at 256 KiB.
 
 Keep `aga_...` tokens out of shared logs and shell history. Generate a fresh
 token from agensis if one is exposed.

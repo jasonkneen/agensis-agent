@@ -28,6 +28,12 @@ and both receive only the Agensis MCP configuration. Use
 `--full-cli-context` only when the connected agent intentionally needs local
 Claude/Codex customizations.
 
+Local Claude memory synchronization is off by default. `--sync-memory` opts in
+to uploading the selected project's Claude memory files, including file names,
+contents, sizes, and the absolute memory-root path, to the connected Agensis
+workspace. Each file is read-only, restricted to the derived or configured
+memory root, and capped at 256 KiB.
+
 ## Repository layout
 
 - `packages/agensis-cli` — readable daemon source
@@ -47,8 +53,9 @@ are stable across the repository split.
 ## Security
 
 The daemon executes coding CLIs with access to the selected working directory.
-Review permission mode and host-folder settings before connecting it. Keep
-`aga_...` connection tokens out of logs and rotate any token that is exposed.
+Job payloads and CLI results travel through the Agensis backend. Review
+permission mode and host-folder settings before connecting it. Keep `aga_...`
+connection tokens out of logs and rotate any token that is exposed.
 
 Security reports should be submitted through GitHub's private vulnerability
 reporting for this repository.

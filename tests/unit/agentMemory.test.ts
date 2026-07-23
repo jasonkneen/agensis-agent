@@ -39,14 +39,14 @@ afterAll(async () => {
 
 describe('projectSlug / deriveMemoryRoot', () => {
   it('slugs a cwd by replacing non-alphanumerics with dashes', () => {
-    expect(projectSlug('/Users/jkneen/Documents/GitHub/agensis')).toBe(
-      '-Users-jkneen-Documents-GitHub-agensis',
+    expect(projectSlug('/Users/example/projects/agensis')).toBe(
+      '-Users-example-projects-agensis',
     );
   });
 
   it('derives the claude palace path from cwd', () => {
-    const r = deriveMemoryRoot({ cwd: '/Users/jkneen/Documents/GitHub/agensis', homedir: '/home/x' });
-    expect(r).toBe('/home/x/.claude/projects/-Users-jkneen-Documents-GitHub-agensis/memory');
+    const r = deriveMemoryRoot({ cwd: '/Users/example/projects/agensis', homedir: '/home/x' });
+    expect(r).toBe('/home/x/.claude/projects/-Users-example-projects-agensis/memory');
   });
 
   it('honors an explicit absolute memory_dir override', () => {

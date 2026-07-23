@@ -35,6 +35,11 @@ test('daemon defaults to two concurrent coding CLI processes', () => {
   assert.equal(config().maxConcurrency, 2);
 });
 
+test('local Claude memory synchronization is explicit opt-in', () => {
+  assert.equal(config().syncMemory, false);
+  assert.equal(config({ syncMemory: true }).syncMemory, true);
+});
+
 test('Claude jobs exclude user customizations and load only the Agensis MCP', () => {
   const command = agentTest.buildAgentCommand(config({ codingCmd: 'claude -p' }), job());
   assert.equal(command.cmd, 'claude');

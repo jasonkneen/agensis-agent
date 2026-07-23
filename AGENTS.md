@@ -27,5 +27,7 @@ reports the intended version through `node packages/agensis-agent/bin/agensis.mj
 ## Release
 
 Push a matching `agent-v<version>` tag. The publish workflow verifies the tag,
-builds and packs the bundle, and publishes `@agensis/agensis-agent` using the
-repository's `NPM_TOKEN` secret.
+builds and packs the bundle, and publishes `@agensis/agensis-agent` through the
+npm trusted-publisher binding for `jasonkneen/agensis-agent` and
+`.github/workflows/publish-agent.yml`. It uses GitHub OIDC and has no long-lived
+npm token secret.

@@ -19,7 +19,7 @@ const MEMORY_EXTENSIONS = new Set([".md", ".markdown", ".txt"]);
 // Claude Code stores a project's memory palace at
 //   ~/.claude/projects/<slug>/memory/
 // where <slug> is the project cwd with every non-alphanumeric char replaced by '-'.
-// e.g. /Users/jkneen/Documents/GitHub/agensis -> -Users-jkneen-Documents-GitHub-agensis
+// e.g. /Users/example/projects/agensis -> -Users-example-projects-agensis
 export function projectSlug(cwd) {
   return String(cwd || "").replace(/[^a-zA-Z0-9]/g, "-");
 }
