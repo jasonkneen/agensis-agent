@@ -1,11 +1,60 @@
 // packages/agensis-cli/src/executor.mjs
 // The single seam where an agent's coding CLI runs. LocalExecutor keeps today's
-// behavior (spawn on the host). SandboxExecutor runs it in a remote sandbox via
-// an injected provider. createExecutor picks one by run_mode.
+// behavior (spawn a fresh `claude`/`codex` process per job) as the fallback
+// path. PrimaryExecutor prefers a warm, reused connection (the Claude Agent
+// SDK / codex app-server, see connectionExecutors.mjs) and falls back to
+// LocalExecutor the first time that connection proves unavailable on this
+// host. SandboxExecutor runs the same {cmd,args} in a remote sandbox via an
+// injected provider. createExecutor picks one by run_mode + coding-CLI family.
 import { runCli } from "./cli.mjs";
+import { createClaudeSdkExecutor, createCodexAppServerExecutor } from "./connectionExecutors.mjs";
 
 export function createLocalExecutor({ run = runCli } = {}) {
   return { run: (opts) => run(opts) };
+}
+
+// Lazy singletons: one warm connection pool per family, shared across every
+// job for the life of the daemon process (that reuse IS the "fast connection"
+// win — see connectionExecutors.mjs for what each pool keeps alive).
+let claudeSdkExecutorSingleton = null;
+let codexAppServerExecutorSingleton = null;
+
+// A family that has failed once (SDK not installed, `codex app-server`
+// missing/erroring) is remembered so every subsequent job goes straight to
+// LocalExecutor instead of re-probing and eating the failure's latency again.
+const confirmedUnavailable = new Set();
+
+function looksLikeUnavailable(error) {
+  const message = String((error && error.message) || error || "");
+  return /Cannot find module|ERR_MODULE_NOT_FOUND|ENOENT|command not found/i.test(message);
+}
+
+/**
+ * Prefers a warm connection for `family` ('claude' | 'codex'); falls back to
+ * LocalExecutor (today's subprocess-per-job behavior, unchanged) the first
+ * time that connection's own error looks like "not installed on this host"
+ * rather than a normal job failure.
+ */
+export function createPrimaryExecutor(family, { local, pooled, log = console } = {}) {
+  const localExecutor = local || createLocalExecutor();
+  const pooledExecutor = pooled || (
+    family === "claude" ? (claudeSdkExecutorSingleton ||= createClaudeSdkExecutor())
+      : family === "codex" ? (codexAppServerExecutorSingleton ||= createCodexAppServerExecutor())
+        : null
+  );
+  if (!pooledExecutor) return localExecutor;
+  return {
+    async run(opts) {
+      if (confirmedUnavailable.has(family)) return localExecutor.run(opts);
+      const result = await pooledExecutor.run(opts);
+      if (result.error && looksLikeUnavailable(result.error)) {
+        confirmedUnavailable.add(family);
+        log.log?.(`[executor] ${family} fast connection unavailable (${result.error.message}); falling back to subprocess mode for this and future jobs.`);
+        return localExecutor.run(opts);
+      }
+      return result;
+    },
+  };
 }
 
 // Orchestrates one sandbox run through a provider: ensureEnv -> putRepo -> exec
@@ -35,12 +84,13 @@ export function createSandboxExecutor(provider) {
   };
 }
 
-export function createExecutor(job, { makeProvider } = {}) {
+export function createExecutor(job, { makeProvider, family } = {}) {
   const runMode = job && job.agent && job.agent.run_mode;
   if (runMode === "sandbox") {
     const factory = makeProvider || defaultSandboxProviderFactory;
     return createSandboxExecutor(factory(job));
   }
+  if (family === "claude" || family === "codex") return createPrimaryExecutor(family);
   return createLocalExecutor();
 }
 

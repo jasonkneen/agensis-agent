@@ -1,6 +1,6 @@
 {
   "name": "agensis-cli",
-  "version": "0.1.26",
+  "version": "0.1.27",
   "private": true,
   "description": "Run a local agensis workspace agent daemon. It connects to a workspace, receives @mention jobs, runs a configured coding CLI in the local folder, and posts results back to agensis.",
   "homepage": "https://agensis.io",
@@ -20,7 +20,7 @@
     ".": "./src/agensis.mjs"
   },
   "scripts": {
-    "check": "node --check bin/agensis.mjs && node --check src/agensis.mjs && node --check src/cli.mjs && node --check src/queue.mjs && node --check src/memory.mjs && node --check src/setupFlow.mjs && node --check src/cursorbuddyLocalBridge.mjs && node --check src/sharedInference.mjs && node --check src/executor.mjs && node --check src/sandbox/e2b.mjs",
+    "check": "node --check bin/agensis.mjs && node --check src/agensis.mjs && node --check src/cli.mjs && node --check src/queue.mjs && node --check src/memory.mjs && node --check src/setupFlow.mjs && node --check src/cursorbuddyLocalBridge.mjs && node --check src/sharedInference.mjs && node --check src/executor.mjs && node --check src/connectionExecutors.mjs && node --check src/sandbox/e2b.mjs",
     "link": "npm link && bun link",
     "pack:dry-run": "npm pack --dry-run",
     "prepack": "npm run check",
@@ -31,6 +31,7 @@
     "src/agensis.mjs",
     "src/cli.mjs",
     "src/executor.mjs",
+    "src/connectionExecutors.mjs",
     "src/connectProfiles.mjs",
     "src/sandbox/e2b.mjs",
     "src/cursorbuddyConnect.mjs",
@@ -57,6 +58,7 @@
     "coding-agent"
   ],
   "dependencies": {
+    "@anthropic-ai/claude-agent-sdk": "^0.3.218",
     "ws": "^8.20.0"
   },
   "optionalDependencies": {

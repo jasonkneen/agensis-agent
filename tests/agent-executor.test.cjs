@@ -103,3 +103,51 @@ test('nodeSupportsE2b gates on the e2b Node >=20.18.1 engine floor', async () =>
   assert.equal(nodeSupportsE2b('21.7.0'), false);
   assert.equal(nodeSupportsE2b('24.16.0'), true);
 });
+
+test('createExecutor without a family (or an unrecognized one) still returns plain LocalExecutor', async () => {
+  const { createExecutor } = await load();
+  const ex = createExecutor({ agent: { run_mode: 'daemon' } }, { family: 'something-else' });
+  assert.equal(typeof ex.run, 'function');
+});
+
+test('createPrimaryExecutor uses the pooled connection when it succeeds', async () => {
+  const { createPrimaryExecutor } = await load();
+  const pooled = { run: async (opts) => ({ status: 0, stdout: `pooled:${opts.prompt}`, stderr: '', error: null }) };
+  const local = { run: async () => { throw new Error('should not run local'); } };
+  const ex = createPrimaryExecutor('claude', { pooled, local });
+  const res = await ex.run({ prompt: 'hi' });
+  assert.equal(res.stdout, 'pooled:hi');
+});
+
+test('createPrimaryExecutor falls back to LocalExecutor when the pooled connection looks unavailable, and remembers it', async () => {
+  const { createPrimaryExecutor } = await load();
+  let pooledCalls = 0;
+  const pooled = { run: async () => { pooledCalls += 1; return { status: null, stdout: '', stderr: '', error: new Error('Cannot find module @anthropic-ai/claude-agent-sdk') }; } };
+  const localCalls = [];
+  const local = { run: async (opts) => { localCalls.push(opts); return { status: 0, stdout: 'local-ran', stderr: '', error: null }; } };
+  const ex = createPrimaryExecutor('claude', { pooled, local });
+
+  const first = await ex.run({ prompt: 'a' });
+  assert.equal(first.stdout, 'local-ran');
+  const second = await ex.run({ prompt: 'b' });
+  assert.equal(second.stdout, 'local-ran');
+
+  // Confirmed-unavailable after the first failure: the pooled connection is
+  // never retried on the second job, only LocalExecutor runs.
+  assert.equal(pooledCalls, 1);
+  assert.equal(localCalls.length, 2);
+});
+
+test('createPrimaryExecutor does NOT fall back for an ordinary job error (not an availability problem)', async () => {
+  const { createPrimaryExecutor } = await load();
+  const pooled = { run: async () => ({ status: 1, stdout: '', stderr: 'rate limited', error: new Error('rate_limit') }) };
+  const local = { run: async () => { throw new Error('should not run local'); } };
+  // A family key distinct from the earlier tests' 'claude' — confirmedUnavailable
+  // is a module-level singleton Set, and the fallback test above deliberately
+  // poisons 'claude' in it; reusing that key here would skip calling pooled.run()
+  // entirely and fail this test for an unrelated reason.
+  const ex = createPrimaryExecutor('claude-ordinary-error', { pooled, local });
+  const res = await ex.run({ prompt: 'a' });
+  assert.equal(res.status, 1);
+  assert.match(res.error.message, /rate_limit/);
+});

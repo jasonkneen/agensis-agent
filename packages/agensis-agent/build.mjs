@@ -22,7 +22,7 @@ const outfile = join(here, 'bin', 'agensis.mjs');
 
 // The version literal baked into the dev source. We replace exactly this token
 // with the published version (verified to be unique in the source).
-const SOURCE_VERSION = '0.1.26';
+const SOURCE_VERSION = '0.1.27';
 
 const result = await build({
   entryPoints: [entry],
@@ -31,10 +31,11 @@ const result = await build({
   platform: 'node',
   format: 'esm',
   target: 'node18',
-  // ws and e2b stay external — normal runtime deps installed alongside the
-  // published package. e2b in particular is a large SDK with its own transitive
-  // deps that must not be inlined (only loaded when a sandbox agent runs).
-  external: ['ws', 'e2b'],
+  // Runtime SDKs stay external and install alongside the published package.
+  // The Claude Agent SDK ships platform-specific native executables, while e2b
+  // is large and only loaded when a sandbox agent runs; neither can be safely
+  // flattened into this bundle.
+  external: ['ws', 'e2b', '@anthropic-ai/claude-agent-sdk'],
   legalComments: 'none',
   write: false,
 });

@@ -29,7 +29,7 @@ const DEFAULT_HEARTBEAT_MS = 15 * 1000;
 const DEFAULT_MAX_CONCURRENCY = 2;
 const LEAN_PROMPT_MAX_BYTES = 10 * 1024;
 const DEFAULT_MODEL = "claude-opus-4-8";
-export const AGENSIS_CLI_VERSION = "0.1.26";
+export const AGENSIS_CLI_VERSION = "0.1.27";
 
 export async function runAgensisDaemon(rawConfig = {}) {
   const config = normalizeConfig(rawConfig);
@@ -565,6 +565,12 @@ function normalizeConfig(raw) {
     sharedModelsFile: String(raw.sharedModelsFile || process.env.AGENSIS_SHARED_MODELS_FILE || "").trim(),
     noCoding: codingDisabled,
     leanCli,
+    // Primary method as of this release: reuse one warm Claude Agent SDK /
+    // codex app-server connection per silo instead of spawning a fresh CLI
+    // process per job (see connectionExecutors.mjs). Falls back to today's
+    // subprocess-per-job behavior automatically if that connection isn't
+    // available on this host, or always if the operator opts out here.
+    fastConnection: booleanOption(raw.fastConnection, booleanOption(process.env.AGENSIS_FAST_CONNECTION, true)),
     // Local Claude memory can contain private project notes. Never upload it
     // unless the host operator opted in at daemon launch time.
     syncMemory: booleanOption(raw.syncMemory, process.env.AGENSIS_SYNC_MEMORY === "1"),
@@ -846,7 +852,15 @@ async function runAgentJob(config, job, { signal }) {
   const progressTimer = setInterval(() => sendDelta(fullContent), 1000);
   if (progressTimer.unref) progressTimer.unref();
 
-  const executor = createExecutor(job);
+  // Only take the pooled/fast path for the literal default binary name
+  // ("claude"/"codex" resolved off PATH). Any customization — an absolute
+  // path, a wrapper script, `claude.sh` — means the operator wants that
+  // exact executable run, so it always gets the unchanged subprocess path.
+  const usesBareBinary = !/[\\/]/.test(command.cmd);
+  const family = config.fastConnection && usesBareBinary
+    ? (isClaudeCommand(command.cmd) ? "claude" : isCodexCommand(command.cmd) ? "codex" : null)
+    : null;
+  const executor = createExecutor(job, { family });
   const result = await executor.run({
     cmd: command.cmd,
     args: [...command.args, prompt],
@@ -857,6 +871,18 @@ async function runAgentJob(config, job, { signal }) {
     label: "agent job",
     signal,
     job,
+    // Fields below are only consumed by the pooled connection executors
+    // (connectionExecutors.mjs) — LocalExecutor/SandboxExecutor ignore them.
+    // sessionKey scopes a warm connection to this silo: same workspace+agent
+    // reuses one live session across jobs instead of reconnecting each time.
+    prompt,
+    model: command.model,
+    permissionMode: command.permissionMode,
+    hostFolders: resolveHostFolders(config, job),
+    leanCli: config.leanCli,
+    mcp: config.leanCli ? leanMcpRuntime(config) : null,
+    sessionKey: `${job.workspaceId || config.workspace || ""}:${config.agent || config.handle || ""}`,
+    clientVersion: AGENSIS_CLI_VERSION,
     onData: (chunk) => {
       if (parser) {
         parser.feed(chunk);
