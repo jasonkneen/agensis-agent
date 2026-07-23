@@ -2,8 +2,8 @@
 //
 // The readable source lives in ../agensis-cli (the dev package). This script
 // bundles its entry into ONE minified ESM file under bin/, so the published
-// package ships no readable source. `ws` stays external (a normal runtime
-// dependency), and the CLI version constant is stamped from this package.json
+// package stays compact. The readable MIT-licensed source remains available in
+// this repository. `ws` stays external, and the CLI version is stamped here
 // so `agensis --version` matches the published version.
 //
 // Run with `npm run build` (also runs automatically on `npm pack` / publish via
@@ -22,7 +22,7 @@ const outfile = join(here, 'bin', 'agensis.mjs');
 
 // The version literal baked into the dev source. We replace exactly this token
 // with the published version (verified to be unique in the source).
-const SOURCE_VERSION = '0.1.25';
+const SOURCE_VERSION = '0.1.26';
 
 const result = await build({
   entryPoints: [entry],

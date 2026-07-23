@@ -1,15 +1,15 @@
 {
   "name": "@agensis/agensis-agent",
-  "version": "0.1.25",
+  "version": "0.1.26",
   "description": "Run a local agensis workspace agent daemon. Connects to a workspace, receives @mention jobs, runs a configured coding CLI in the local folder, and posts results back to agensis. Ships as a single minified bundle.",
   "homepage": "https://agensis.io",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/jasonkneen/agensis.git",
-    "directory": "agent/agensis-agent"
+    "url": "git+https://github.com/jasonkneen/agensis-agent.git",
+    "directory": "packages/agensis-agent"
   },
   "bugs": {
-    "url": "https://github.com/jasonkneen/agensis/issues"
+    "url": "https://github.com/jasonkneen/agensis-agent/issues"
   },
   "type": "module",
   "bin": {

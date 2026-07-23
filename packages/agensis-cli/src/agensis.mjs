@@ -29,7 +29,7 @@ const DEFAULT_HEARTBEAT_MS = 15 * 1000;
 const DEFAULT_MAX_CONCURRENCY = 2;
 const LEAN_PROMPT_MAX_BYTES = 10 * 1024;
 const DEFAULT_MODEL = "claude-opus-4-8";
-export const AGENSIS_CLI_VERSION = "0.1.25";
+export const AGENSIS_CLI_VERSION = "0.1.26";
 
 export async function runAgensisDaemon(rawConfig = {}) {
   const config = normalizeConfig(rawConfig);

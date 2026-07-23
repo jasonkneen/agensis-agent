@@ -1,8 +1,9 @@
-# agensis-cli
+# Agensis Agent source
 
 Run a local agensis workspace agent daemon from your machine.
 
-The npm package is `agensis-cli`; the installed command is `agensis`.
+This workspace contains the readable source for the published
+`@agensis/agensis-agent` package. The installed command is `agensis`.
 It connects to an agensis workspace over websocket, receives agent jobs, runs
 your configured coding CLI in the local folder, and posts results back to the
 workspace.
@@ -10,13 +11,13 @@ workspace.
 ## Install
 
 ```sh
-npm install -g agensis-cli
+npm install -g @agensis/agensis-agent
 ```
 
 Or run without a global install:
 
 ```sh
-npx --package agensis-cli agensis connect --help
+npx @agensis/agensis-agent connect --help
 ```
 
 ## Connect An Agent
@@ -147,13 +148,13 @@ stopping work in another channel or queue lane.
 Keep `aga_...` tokens out of shared logs and shell history. Generate a fresh
 token from agensis if one is exposed.
 
-## Release Checks
+## Release checks
 
-Before publishing `agensis-cli`, run:
+From the repository root, run:
 
 ```sh
-npm run check
-npm run pack:dry-run
+npm run verify
 ```
 
-The package publishes the `agensis` command from `bin/agensis.mjs`.
+Only `packages/agensis-agent` is published. This source workspace is private to
+the npm monorepo so it cannot be released accidentally under the legacy name.

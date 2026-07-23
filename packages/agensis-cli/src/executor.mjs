@@ -1,4 +1,4 @@
-// agent/agensis-cli/src/executor.mjs
+// packages/agensis-cli/src/executor.mjs
 // The single seam where an agent's coding CLI runs. LocalExecutor keeps today's
 // behavior (spawn on the host). SandboxExecutor runs it in a remote sandbox via
 // an injected provider. createExecutor picks one by run_mode.

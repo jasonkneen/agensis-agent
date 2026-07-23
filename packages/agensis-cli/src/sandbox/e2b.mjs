@@ -1,4 +1,4 @@
-// agent/agensis-cli/src/sandbox/e2b.mjs
+// packages/agensis-cli/src/sandbox/e2b.mjs
 // e2b provider: run the coding CLI inside a Firecracker microVM. Ephemeral —
 // created per job, killed on teardown. Clones the repo via git, returns the
 // resulting `git diff` as the artifact. Method names match the e2b Node SDK

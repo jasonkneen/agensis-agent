@@ -60,6 +60,8 @@ Optional:
 - `--name <name>` — display name
 - `--cwd <path>` — folder where the coding CLI runs
 - `--coding-cmd <command>` — command used for jobs (default `claude -p`)
+- `--full-cli-context` — opt out of the default isolated Claude/Codex launch
+- `--max-concurrency <n>` — simultaneous coding CLI jobs (default `2`)
 - `--model <id>` — default model passed to supported coding CLIs
 - `--permission-mode <mode>` — `default`, `accept_edits`, or `yolo`
 - `--yolo` / `--no-sandbox` — alias for `--permission-mode yolo`
@@ -84,6 +86,11 @@ any local coding agent with access to that folder.
 
 Keep `aga_...` tokens out of shared logs and shell history. Generate a fresh
 token from agensis if one is exposed.
+
+By default, Claude runs in safe mode and Codex skips user configuration,
+project instructions, memories, plugins, hooks, and skill search. Both are
+given only the Agensis MCP configuration, and the complete daemon prompt is
+bounded. `--full-cli-context` deliberately restores normal CLI discovery.
 
 ## Requirements
 
