@@ -56,7 +56,20 @@ jobs:
           fi
           echo "Publishing @agensis/agensis-agent@$PKG"
 
-      - name: Publish to npm
+      - name: Check whether this version is already published
+        id: registry
         if: startsWith(github.ref, 'refs/tags/agent-v')
+        working-directory: packages/agensis-agent
+        run: |
+          PKG="$(node -p "require('./package.json').version")"
+          if npm view "@agensis/agensis-agent@$PKG" version >/dev/null 2>&1; then
+            echo "published=true" >> "$GITHUB_OUTPUT"
+            echo "@agensis/agensis-agent@$PKG is already on npm; skipping publish."
+          else
+            echo "published=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Publish to npm
+        if: startsWith(github.ref, 'refs/tags/agent-v') && steps.registry.outputs.published != 'true'
         working-directory: packages/agensis-agent
         run: npm publish --access public --provenance
