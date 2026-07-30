@@ -5,8 +5,8 @@ CLIs to an [Agensis](https://agensis.io) workspace.
 
 The daemon receives workspace jobs over an authenticated WebSocket, runs the
 selected coding CLI in the configured working directory, and streams results
-back to Agensis. The website, backend, and desktop application remain in a
-separate private repository; this repository contains only the host-side agent.
+back to Agensis. The website, backend, and desktop application live in a
+separate repository; this one contains only the host-side agent.
 
 Amp Orb agents use the same connection: the daemon invokes the signed-in local
 Amp CLI to create or continue an Amp-managed orb thread, then streams that

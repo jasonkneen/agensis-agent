@@ -21,11 +21,11 @@
 // Rule identity is deliberately NOT a glob matcher we wrote. The SDK hands us
 // `suggestions` — the exact rules it would write if the human picked "always
 // allow" — on EVERY request. A stored rule matches when it is byte-identical to
-// one of the rules the SDK is offering right now. That means we never have to
-// reimplement Claude's `Bash(git clone:*)` matching semantics and can never
-// drift from them: two `git clone`s produce the same suggestion, so the second
-// one matches; anything Claude considers a different permission produces a
-// different suggestion and gets asked again. The failure direction is safe —
+// one of the rules the SDK is offering right now. So the daemon owns no glob
+// engine of its own that could fall out of step with the SDK's: two
+// `git clone`s produce the same suggestion, so the second one matches; anything
+// the SDK treats as a different permission produces a different suggestion and
+// gets asked again. The failure direction is safe —
 // a rule we fail to match costs one extra prompt, never an ungranted tool call.
 
 import crypto from "node:crypto";

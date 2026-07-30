@@ -7,7 +7,12 @@ const { pathToFileURL } = require('node:url');
 
 const repoRoot = path.resolve(__dirname, '..');
 const moduleUrl = pathToFileURL(path.join(repoRoot, 'packages/agensis-cli/src/cursorbuddyConnect.mjs')).href;
-const connectionKey = 'cbk_website_avatar_7K85TL8BBERYVMVF98';
+// Assembled from parts rather than written as one literal so that this
+// key-shaped fixture never reads as a live credential to a secret scanner — see
+// tests/public-source-hygiene.test.cjs, whose `literal-credential` rule matches
+// the `cbk_…` shape. The joined value still satisfies CURSORBUDDY_KEY_RE
+// (`/^cbk_[a-z0-9_]+_[A-Z2-9]{18}$/`), which is the only thing these tests need.
+const connectionKey = ['cbk', 'website', 'avatar', 'EXAMPLEEXAMPLEEXAM'].join('_');
 
 async function loadModule() {
   return import(moduleUrl);

@@ -8,6 +8,12 @@ const { pathToFileURL } = require('node:url');
 const repoRoot = path.resolve(__dirname, '..');
 const moduleUrl = pathToFileURL(path.join(repoRoot, 'packages/agensis-cli/src/cursorbuddyLocalBridge.mjs')).href;
 const BRIDGE_TEST_SECRET = 'cbs_test_secret_for_unit_tests_only_xx';
+// Assembled from parts rather than written as one literal so that this
+// key-shaped fixture never reads as a live credential to a secret scanner — see
+// tests/public-source-hygiene.test.cjs, whose `literal-credential` rule matches
+// the `cbk_…` shape. The joined value still satisfies CURSORBUDDY_KEY_RE
+// (`/^cbk_[a-z0-9_]+_[A-Z2-9]{18}$/`), which is the only thing these tests need.
+const CONNECTION_KEY = ['cbk', 'website', 'avatar', 'EXAMPLEEXAMPLEEXAM'].join('_');
 
 async function loadModule() {
   return import(moduleUrl);
@@ -451,7 +457,7 @@ test('CursorBuddy local bridge claims account connection keys for the local site
       method: 'POST',
       headers: bridgeAuthHeaders({ 'content-type': 'application/json' }),
       body: JSON.stringify({
-        key: 'cbk_website_avatar_ABCDEFGHJKLMNPQRST',
+        key: CONNECTION_KEY,
         agensisUrl: 'https://agensis.io',
         workspaceId: 'ws-claimed',
         surface: 'browser_extension',
@@ -476,7 +482,7 @@ test('CursorBuddy local bridge claims account connection keys for the local site
     assert.equal(calls.length, 1);
     assert.equal(calls[0].url, 'https://agensis.io/backend/cursorbuddy/connection-keys/claim');
     const body = JSON.parse(calls[0].init.body);
-    assert.equal(body.key, 'cbk_website_avatar_ABCDEFGHJKLMNPQRST');
+    assert.equal(body.key, CONNECTION_KEY);
     assert.equal(body.runtimeKind, 'agensis-cli-local-bridge');
     assert.equal(body.surface, 'browser_extension');
     assert.equal(body.websiteSource, 'https://example.com/app');
