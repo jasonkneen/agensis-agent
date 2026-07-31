@@ -925,7 +925,9 @@ export function createCodexAppServerExecutor({ spawnFn = spawn, idleCloseMs = DE
       const threadResult = await rpc.request("thread/start", {
         cwd: opts.cwd,
         ephemeral: opts.leanCli || undefined,
-        model: opts.model,
+        // An empty model means Auto. Omit it so Codex can use its current
+        // configuration; the app-server rejects an explicit empty string.
+        ...(opts.model ? { model: opts.model } : {}),
         config,
         ...mapCodexApproval(opts.permissionMode),
       });
