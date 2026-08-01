@@ -118,6 +118,46 @@ test('codex app-server executor: streams deltas and resolves stdout on turn/comp
   );
 });
 
+test('codex app-server executor: an automatic model defers to the Codex configuration', async () => {
+  const { createCodexAppServerExecutor } = await load();
+  const child = fakeCodexChild();
+  const server = scriptedCodexServer(child);
+  const ex = createCodexAppServerExecutor({ spawnFn: () => child });
+
+  await ex.run({
+    cwd: '/tmp',
+    prompt: 'use the configured model',
+    model: '',
+    sessionKey: 'silo-auto-model',
+    onData: () => {},
+  });
+
+  const threadStart = server.seen
+    .map((line) => JSON.parse(line))
+    .find((message) => message.method === 'thread/start');
+  assert.equal(Object.hasOwn(threadStart.params, 'model'), false);
+});
+
+test('codex app-server executor: an explicit model is sent to Codex', async () => {
+  const { createCodexAppServerExecutor } = await load();
+  const child = fakeCodexChild();
+  const server = scriptedCodexServer(child);
+  const ex = createCodexAppServerExecutor({ spawnFn: () => child });
+
+  await ex.run({
+    cwd: '/tmp',
+    prompt: 'use this model',
+    model: 'gpt-5.6-sol',
+    sessionKey: 'silo-explicit-model',
+    onData: () => {},
+  });
+
+  const threadStart = server.seen
+    .map((line) => JSON.parse(line))
+    .find((message) => message.method === 'thread/start');
+  assert.equal(threadStart.params.model, 'gpt-5.6-sol');
+});
+
 test('codex app-server executor: reuses one spawned process across jobs with the same sessionKey', async () => {
   const { createCodexAppServerExecutor } = await load();
   const child = fakeCodexChild();
